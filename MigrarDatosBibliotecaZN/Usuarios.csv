@@ -1,0 +1,22 @@
+id_usuario,nombre,email,fecha_registro,fecha_nacimiento
+1,Juan Pérez,juanperez@email.com,2023-04-12,1990-06-25
+2,María García,mariag@email.com,2023-05-01,1985-11-11
+3,Pedro Sánchez,pedrosanchez@email.com,2023-03-21,1995-02-18
+4,Laura Rodríguez,laura_rodriemail.com,2023-07-15,1990-12-30
+5,Andrés López,andres@example.com,2023-02-11,1880-01-01
+6,Felipe Gómez,felipe_gomez@correo.com,2023-08-01,1993-09-25
+7,Isabel Martínez,isabelmartinez@email.com,2023-09-01,1988-05-10
+8,Francisco Romero,francisco.romero@dominio.com,2023-03-13,NULL
+9,Sofía Fernández,sofiafer@mail.com,2022-12-30,2000-10-05
+10,NULL,sincorreo@dominio.com,2024-10-01,1987-09-14
+11,Carmen Sánchez,carmensanchez@email.com,2023-11-15,1994-03-22
+12,NULL,email13@dominio.com,2023-06-01,1990-01-09
+13,Hugo Díaz,hugo.diaz@email.com,2023-08-20,1981-12-03
+14,Laura Hernández,laura.hdz@correo.com,2023-09-12,1997-03-28
+15,Mariana López,mariana_lop@dominio.com,2024-01-01,1985-07-14
+16,NULL,notvalidemail@correo.com,2024-02-01,2003-11-02
+17,Pedro García,pedrogcorreo.com,2023-06-30,1990-08-19
+18,Teresa González,teresag@dominio.com,2023-04-01,1975-01-30
+19,Manuel Pérez,manuelperez123@email.com,2023-07-10,1999-05-15
+20,Alberto Martínez,alberto.martinez@email.com,2023-08-09,1880-07-04
+

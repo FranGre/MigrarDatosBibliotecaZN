@@ -1,0 +1,32 @@
+id_libro,titulo,id_autor,genero,fecha_publicacion
+1,Cien años de soledad,1,Realismo mágico,1967-06-05
+2,La casa de los espíritus,2,Realismo mágico,1982-11-30
+3,La ciudad y los perros,3,Novela histórica,1963-03-01
+4,El Aleph,4,Ficción,1945-04-01
+5,Tokio Blues,5,Romance,1880-07-01
+6,Ojos cerrados,6,Drama,1990-10-12
+7,El alquimista,7,Aventura,1880-07-01
+8,Harry Potter y la piedra filosofal,8,Fantasía,1997-06-26
+9,Rayuela,9,Contemporánea,1963-06-05
+10,El proceso,10,Filosófica,1925-12-10
+11,La sombra del viento,12,Suspenso,2001-01-01
+12,Outlander,13,Historia,2200-06-01
+13,It,14,Terror,1986-09-15
+14,El lobo estepario,15,Filosofía,1900-02-01
+15,Como agua para chocolate,16,Romántico,1989-03-01
+16,El jardín de cemento,17,Literatura contemporánea,NULL
+17,El fin de la eternidad,18,Ciencia ficción,1999-11-15
+18,El silencio de la ciudad blanca,19,Thriller,2011-08-09
+19,Los versos satánicos,20,Religión,1988-09-15
+20,La tregua,21,Drama,1960-04-01
+21,El beso de la mujer araña,22,Literatura política,1976-04-01
+22,El tambor de hojalata,23,Psicológica,1959-01-01
+23,Nunca me abandones,24,Ciencia ficción,2005-07-01
+24,Una educación,25,Biografía,2011-01-01
+25,Los ojos del hermano eterno,26,Drama,3000-01-01
+26,La novela de la rosa,27,Romance,1982-03-15
+27,El niño con el pijama de rayas,28,Infantil,2006-01-01
+28,La huella del lobo,29,Aventura,2010-04-01
+29,El misterioso caso de Styles,30,Crimen,1920-12-15
+30,Ficciones,4,Ciencia ficción,1944-01-01
+
