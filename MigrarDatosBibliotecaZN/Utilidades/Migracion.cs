@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace MigrarDatosBibliotecaZN.Utilidades
 {
@@ -26,7 +27,7 @@ namespace MigrarDatosBibliotecaZN.Utilidades
 
             if (!File.Exists(rutaCsvAutores))
             {
-                Consola.EscribirError($"Fichero no encontrado {rutaCsvAutores}");
+                Consola.EscribirError(MensajeFicheroNoEncontrado(rutaCsvAutores));
                 return;
             }
 
@@ -130,6 +131,105 @@ namespace MigrarDatosBibliotecaZN.Utilidades
                 { "Británica", Guid.Parse("DBE50CBE-62A1-4B4F-9E37-6F77F63C33C5") },
             };
             return diccionarioNacionalidades;
+        }
+
+        public void MigrarUsuarios()
+        {
+            var rutaCsvUsuarios = $"{directorioRaizProyecto}/Usuarios.csv";
+
+            if (!File.Exists(rutaCsvUsuarios))
+            {
+                Consola.EscribirError(MensajeFicheroNoEncontrado(rutaCsvUsuarios));
+                return;
+            }
+            Consola.Escribir("Iniciando Migracion Usuarios...", ConsoleColor.Blue);
+            Workbook workbook = new Workbook(rutaCsvUsuarios);
+            Worksheet worksheet = workbook.Worksheets.First();
+
+            for (int i = 1; i < worksheet.Cells.MaxDataRow; i++)
+            {
+                var idUsuario = worksheet.Cells[i, 0].StringValue;
+                var nombre = worksheet.Cells[i, 1].StringValue == "NULL" ? null : worksheet.Cells[i, 1].StringValue;
+                var email = worksheet.Cells[i, 2].StringValue;
+                var fechaRegistro = worksheet.Cells[i, 3].StringValue;
+                var fechaNacimiento = worksheet.Cells[i, 4].StringValue;
+
+                if (string.IsNullOrEmpty(nombre))
+                {
+                    Consola.EscribirWarning($"{MensajeInfoUsuario(idUsuario, nombre, email)} NO GUARDADO NOMBRE VACIO");
+                    continue;
+                }
+                nombre = nombre.Trim();
+
+                var nombres = nombre.Split(' ');
+
+                if (nombres[0].Count() > 30)
+                {
+                    nombres[0] = nombres[0].Substring(0, 30);
+                }
+
+                if (nombres[1].Count() > 50)
+                {
+                    nombres[1] = nombres[1].Substring(0, 50);
+                }
+
+                if (!string.IsNullOrEmpty(email))
+                {
+                    email = email.Trim();
+
+                    if (!Regex.IsMatch(email, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
+                    {
+                        Consola.EscribirWarning($"{MensajeInfoUsuario(idUsuario, nombre, email)} NO GUARDADO FORMATO EMAIL INVALIDO ");
+                        continue;
+                    }
+
+                    if (db.Usuarios.Where(usuario => usuario.Email == email).FirstOrDefault() != null)
+                    {
+                        Consola.EscribirWarning($"{MensajeInfoUsuario(idUsuario, nombre, email)} NO GUARDADO EMAIL REGISTRADO");
+                        continue;
+                    }
+                }
+
+                fechaRegistro = fechaRegistro.Trim();
+                if (string.IsNullOrEmpty(fechaRegistro))
+                {
+                    fechaRegistro = DateTime.Now.ToString();
+                }
+
+                if (Convert.ToDateTime(fechaRegistro) < new DateTime(2005, 01, 01))
+                {
+                    fechaRegistro = DateTime.Now.ToString();
+                }
+
+                if (Convert.ToDateTime(fechaRegistro) > DateTime.Now)
+                {
+                    fechaRegistro = DateTime.Now.ToString();
+                }
+
+                // agregar FechaNacimiento en el modelo Usuario, ten en cuentsa las nuevas ids para las Nacionalidades
+
+                db.Usuarios.Add(new Usuario
+                {
+                    Id = Guid.NewGuid(),
+                    IdImportado = Convert.ToInt32(idUsuario),
+                    PrimerNombre = nombres[0],
+                    Apellidos = nombres[1],
+                    Email = email,
+                    FechaCreacion = Convert.ToDateTime(fechaRegistro)
+                });
+                db.SaveChanges();
+            }
+            Consola.Escribir("Migracion Usuarios finalizada :)", ConsoleColor.Blue);
+        }
+
+        private string MensajeInfoUsuario(string id, string nombre, string email)
+        {
+            return $"USUARIO {id} {nombre} {email} -";
+        }
+
+        private string MensajeFicheroNoEncontrado(string fichero)
+        {
+            return $"Fichero no encontrado {fichero}";
         }
     }
 }
