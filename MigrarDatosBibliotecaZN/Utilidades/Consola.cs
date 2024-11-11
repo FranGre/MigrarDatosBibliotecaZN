@@ -20,5 +20,10 @@ namespace MigrarDatosBibliotecaZN.Utilidades
         {
             Escribir(mensaje, ConsoleColor.Green);
         }
+
+        public static void EscribirWarning(string mensaje)
+        {
+            Escribir(mensaje, ConsoleColor.DarkYellow);
+        }
     }
 }
