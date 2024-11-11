@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MigrarDatosBibliotecaZN.Modelos
 {
-    [Table("Nacioinalidades")]
+    [Table("Nacionalidades")]
     internal class Nacionalidad
     {
         public Guid Id { get; set; }

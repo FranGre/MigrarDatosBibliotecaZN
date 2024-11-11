@@ -11,7 +11,7 @@ namespace MigrarDatosBibliotecaZN.Modelos
         public Guid Id { get; set; }
         [Required, StringLength(30)]
         public string Nombre { get; set; }
-        [Required, StringLength(60)]
+        [Required, StringLength(200)]
         public string Descripcion { get; set; }
         [Required]
         public DateTime FechaCreacion { get; set; }

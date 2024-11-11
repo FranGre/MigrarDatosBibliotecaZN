@@ -1,5 +1,5 @@
 ﻿using MigrarDatosBibliotecaZN.Contexto;
-using System.Linq;
+using MigrarDatosBibliotecaZN.Utilidades;
 
 namespace MigrarDatosBibliotecaZN
 {
@@ -9,7 +9,11 @@ namespace MigrarDatosBibliotecaZN
         {
             var db = new AppDbContexto();
 
-            db.Usuarios.ToList();
+            var seeder = new Seeder(db);
+            seeder.InsertarNacionalidades();
+            seeder.InsertarEstadosPrestamo();
+            seeder.InsertarGeneros();
+            seeder.InsertarEstadoslibro();
         }
     }
 }
