@@ -97,23 +97,6 @@ namespace MigrarDatosBibliotecaZN.Utilidades
             return $"AUTOR {id} {nombre} -";
         }
 
-        private string EliminarAcentos(string texto)
-        {
-            string textoDescompuesto = texto.Normalize(NormalizationForm.FormD);
-
-            StringBuilder stringBuilder = new StringBuilder();
-
-            foreach (var caracter in textoDescompuesto)
-            {
-                if (CharUnicodeInfo.GetUnicodeCategory(caracter) != UnicodeCategory.NonSpacingMark)
-                {
-                    stringBuilder.Append(caracter);
-                }
-            }
-
-            return stringBuilder.ToString();
-        }
-
         private Dictionary<string, Guid> GenerarDiccionarioNacionalidades()
         {
             Dictionary<string, Guid> diccionarioNacionalidades = new Dictionary<string, Guid>
@@ -338,6 +321,110 @@ namespace MigrarDatosBibliotecaZN.Utilidades
                 {"Filosofica", Guid.Parse("DC691C42-4EF5-43FE-857B-7A3B9B3F7BB4") },
                 {"Psicologica", Guid.Parse("ECD692C6-83EF-4666-8EAC-4250622B34A6") },
                 {"Romance", Guid.Parse("05A3281C-93B1-4431-BEE6-83DE9F434C37") },
+            };
+        }
+
+        public void MigrarPrestamos()
+        {
+            var rutaCsvPrestamos = $"{directorioRaizProyecto}/Prestamos.csv";
+
+            if (!File.Exists(rutaCsvPrestamos))
+            {
+                Consola.EscribirError(MensajeFicheroNoEncontrado(rutaCsvPrestamos));
+                return;
+            }
+
+            Workbook workbook = new Workbook(rutaCsvPrestamos);
+            Worksheet worksheet = workbook.Worksheets.First();
+
+            for (int i = 1; i < worksheet.Cells.MaxDataRow; i++)
+            {
+                var prestamoId = worksheet.Cells[i, 0].StringValue;
+                var usuarioId = worksheet.Cells[i, 1].StringValue;
+                var libroId = worksheet.Cells[i, 2].StringValue;
+                var fechaPrestamo = worksheet.Cells[i, 3].StringValue;
+                var fechaDevolucion = worksheet.Cells[i, 4].StringValue;
+                var estadoPrestamo = worksheet.Cells[i, 5].StringValue;
+
+                if (string.IsNullOrEmpty(usuarioId))
+                {
+                    Consola.EscribirWarning($"{MensajeInfoPrestamo(prestamoId)} NO GUARDADO USUARIO VACIO");
+                    continue;
+                }
+
+                var usuario = db.Usuarios.Where(u => u.IdImportado.ToString() == usuarioId).FirstOrDefault();
+                if (usuario == null)
+                {
+                    Consola.EscribirWarning($"{MensajeInfoPrestamo(prestamoId)} NO GUARDADO USUARIO NO EXISTE");
+                    continue;
+                }
+
+
+                if (string.IsNullOrEmpty(libroId))
+                {
+                    Consola.EscribirWarning($"{MensajeInfoPrestamo(prestamoId)} NO GUARDADO LIBRO VACIO");
+                    continue;
+                }
+
+                var libro = db.Libros.Where(u => u.IdImportado.ToString() == libroId).FirstOrDefault();
+                if (libro == null)
+                {
+                    Consola.EscribirWarning($"{MensajeInfoPrestamo(libroId)} NO GUARDADO LIBRO NO EXISTE");
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(fechaPrestamo))
+                {
+                    fechaPrestamo = DateTime.Now.ToShortDateString();
+                }
+
+                if (Convert.ToDateTime(fechaPrestamo) > DateTime.Now || Convert.ToDateTime(fechaPrestamo) < new DateTime(2000, 01, 01))
+                {
+                    fechaPrestamo = DateTime.Now.ToShortDateString();
+                }
+
+                if (string.IsNullOrEmpty(fechaDevolucion) || Convert.ToDateTime(fechaDevolucion) < Convert.ToDateTime(fechaPrestamo))
+                {
+                    fechaDevolucion = new DateTime().AddDays(60.0).ToShortDateString();
+                }
+
+                if (string.IsNullOrEmpty(estadoPrestamo))
+                {
+                    Consola.EscribirWarning($"{MensajeInfoPrestamo(libroId)} NO GUARDADO ESTADO VACIO");
+                    continue;
+                }
+
+                var diccionarioEstadosPrestamo = GenerarDiccionarioEstadosPrestamo();
+
+                var estadoPrestamoId = diccionarioEstadosPrestamo[estadoPrestamo];
+
+                db.Prestamos.Add(new Prestamo
+                {
+                    Id = Guid.NewGuid(),
+                    IdImportado = Convert.ToInt32(prestamoId),
+                    LibroId = libro.Id,
+                    UsuarioId = usuario.Id,
+                    EstadoPrestamoId = estadoPrestamoId,
+                    FechaCreacion = Convert.ToDateTime(fechaPrestamo),
+                    FechaDevolucion = Convert.ToDateTime(fechaDevolucion),
+                    FechaModificacion = DateTime.Now
+                });
+                db.SaveChanges();
+            }
+        }
+
+        private string MensajeInfoPrestamo(string prestamoId)
+        {
+            return $"PRESTAMO {prestamoId} -";
+        }
+
+        private Dictionary<string, Guid> GenerarDiccionarioEstadosPrestamo()
+        {
+            return new Dictionary<string, Guid>
+            {
+                { "Devuelto", Guid.Parse("38542E60-6604-4478-B579-935F348F0D4A") },
+                { "Pendiente", Guid.Parse("22DFBC89-F991-4F71-88C6-04F02A0776DD") },
+                { "Retrasado", Guid.Parse("4D01158F-F55D-48EB-8DA1-7BBF9D8636CE") }
             };
         }
     }

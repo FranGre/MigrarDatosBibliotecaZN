@@ -22,7 +22,8 @@ namespace MigrarDatosBibliotecaZN
 
             // migracion.MigrarAutores();
             // migracion.MigrarUsuarios();
-            migracion.MigrarLibros();
+            // migracion.MigrarLibros();
+            migracion.MigrarPrestamos();
             Console.ReadKey();
         }
     }
