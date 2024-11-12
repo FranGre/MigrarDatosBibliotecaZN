@@ -15,6 +15,7 @@ namespace MigrarDatosBibliotecaZN.Utilidades
     {
         private AppDbContexto db;
         private string directorioRaizProyecto = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\"));
+        private const string DISPONIBLE = "3FBBEB5A-00CE-48CA-9FE4-3CC731DD2E16";
 
         public Migracion(AppDbContexto db)
         {
@@ -230,6 +231,114 @@ namespace MigrarDatosBibliotecaZN.Utilidades
         private string MensajeFicheroNoEncontrado(string fichero)
         {
             return $"Fichero no encontrado {fichero}";
+        }
+
+        public void MigrarLibros()
+        {
+            var rutaCsvLibros = $"{directorioRaizProyecto}/Libros.csv";
+
+            if (!File.Exists(rutaCsvLibros))
+            {
+                Consola.EscribirError(MensajeFicheroNoEncontrado(rutaCsvLibros));
+                return;
+            }
+
+            Workbook workbook = new Workbook(rutaCsvLibros);
+            Worksheet worksheet = workbook.Worksheets.First();
+
+            for (int i = 1; i < worksheet.Cells.MaxDataRow; i++)
+            {
+                var idLibro = worksheet.Cells[i, 0].StringValue;
+                var titulo = worksheet.Cells[i, 1].StringValue;
+                var idAutor = worksheet.Cells[i, 2].StringValue;
+                var genero = worksheet.Cells[i, 3].StringValue;
+                var fechaPublicacion = worksheet.Cells[i, 4].StringValue;
+
+                if (string.IsNullOrEmpty(titulo))
+                {
+                    Consola.EscribirWarning($"{MensajeInfoLibro(idLibro, titulo)} NO GUARDADO TITULO VACIO");
+                    continue;
+                }
+
+                titulo = titulo.Trim();
+
+                if (titulo.Count() > 50)
+                {
+                    titulo = titulo.Substring(0, 50);
+                }
+
+                if (string.IsNullOrEmpty(idAutor))
+                {
+                    Consola.EscribirWarning($"{MensajeInfoLibro(idLibro, titulo)} NO GUARDADO AUTOR VACIO");
+                    continue;
+                }
+
+                var autor = db.Autores.Where(a => a.IdImportado.ToString() == idAutor).FirstOrDefault();
+                if (autor == null)
+                {
+                    Consola.EscribirWarning($"{MensajeInfoLibro(idLibro, titulo)} NO GUARDADO AUTOR NO EXISTE");
+                    continue;
+                }
+
+                Dictionary<string, Guid> diccionarioGeneros = GenerarDiccionarioGeneros();
+                var generoId = Guid.Empty;
+
+                if (diccionarioGeneros.ContainsKey(genero))
+                {
+                    generoId = diccionarioGeneros[genero];
+                }
+
+                if (generoId == Guid.Empty)
+                {
+                    var item = db.Generos.Where(g => g.Nombre == genero).FirstOrDefault();
+                    if (item == null)
+                    {
+                        item = db.Generos.Add(new Genero { Id = Guid.NewGuid(), Nombre = genero, FechaCreacion = DateTime.Now });
+                        db.SaveChanges();
+                    }
+                    generoId = item.Id;
+                }
+
+                if (string.IsNullOrEmpty(fechaPublicacion))
+                {
+                    fechaPublicacion = DateTime.Now.ToShortDateString();
+                }
+
+                if (Convert.ToDateTime(fechaPublicacion) > DateTime.Now || Convert.ToDateTime(fechaPublicacion) > new DateTime(1800, 01, 01))
+                {
+                    fechaPublicacion = DateTime.Now.ToShortDateString();
+                }
+
+                db.Libros.Add(new Libro
+                {
+                    Id = Guid.NewGuid(),
+                    IdImportado = Convert.ToInt32(idLibro),
+                    AutorId = autor.Id,
+                    GeneroId = generoId,
+                    EstadoLibroId = Guid.Parse(DISPONIBLE),
+                    Titulo = titulo,
+                    Sinopsis = "-",
+                    FechaPublicacion = Convert.ToDateTime(fechaPublicacion),
+                    FechaCreacion = DateTime.Now
+                });
+                db.SaveChanges();
+            }
+        }
+
+        private string MensajeInfoLibro(string id, string titulo)
+        {
+            return $"LIBRO {id} {titulo} -";
+        }
+
+        private Dictionary<string, Guid> GenerarDiccionarioGeneros()
+        {
+            return new Dictionary<string, Guid>
+            {
+                {"Religion", Guid.Parse("1A7ECD88-73FE-4C19-9B20-3EE9753F5E35") },
+                {"Filosofica", Guid.Parse("DC691C42-4EF5-43FE-857B-7A3B9B3F7BB4") },
+                {"Psicologica", Guid.Parse("ECD692C6-83EF-4666-8EAC-4250622B34A6") },
+                {"Romance", Guid.Parse("05A3281C-93B1-4431-BEE6-83DE9F434C37") },
+            };
         }
     }
 }
